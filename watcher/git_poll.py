@@ -1,19 +1,16 @@
-
-
-            imp
 import subprocess
 import requests
 import sys
 import os
 import logging
 
-logging.basicConfig(filename='git_poll.log', level=logging.INFO format='%(asctime)s %(message)s')
+logging.basicConfig(filename='git_poll.log', level=logging.INFO, format='%(asctime)s %(message)s')
 
-def run_cmd(cmd, cdw=None):
+def run_cmd(cmd, cwd=None):
     result = subprocess.run(
             cmd,
             shell = True,
-            stdout = subprocessout.PIPE,
+            stdout = subprocess.PIPE,
             stderr = subprocess.PIPE,
             cwd = cwd
             text=True
@@ -33,7 +30,7 @@ def update_repo(repo_url, repo_path):
     else:
         logging.info("Updating repository...")
         run_cmd("git fetch origin", cwd=repo_path)
-        run_cmd("git reset hard origin/main", cwd=repo_path)
+        run_cmd("git reset --hard origin/main", cwd=repo_path)
 
 def main(repo_url, last_commit_hash, backend_url):
     repo_path = "./repo_temp"
@@ -47,19 +44,19 @@ def main(repo_url, last_commit_hash, backend_url):
         
         if latest_commit != last_commit_hash:
             logging.info("New commit detected, launching pipeline...")
-            response = request.post(backend_url, json={"commit": latest_commit})
+            response = requests.post(backend_url, json={"commit": latest_commit})
 
             if response.status_code == 200:
-                logging.info(f"Pipeline succesfully launched for commit! {latest_commmit}")
+                logging.info(f"Pipeline successfully launched for commit! {latest_commit}")
                 print(latest_commit)
             else:
-                logging.error(f"Error launching pipeline: {response.status_code} {responde.text}")
+                logging.error(f"Error launching pipeline: {response.status_code} {response.text}")
 
         else:
-            loggin.info("No new commits")
+            logging.info("No new commits")
 
     except Exception as e:
-        loggin.error(f"Execution error: {e}")
+        logging.error(f"Execution error: {e}")
 
 if __name__ == "__main__":
     if len(sys.argv) != 4:
